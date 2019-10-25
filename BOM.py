@@ -145,7 +145,7 @@ def build(folder_path, config, outfn, supplier, plot):
                 QTY = row.QTY * BOM_QTY
                 df.loc[i] = [ part_no, part.Name, QTY, fn, part['Pkg Price'], part['Pkg QTY'], part.Supplier, part['Supplier PartNo'] ]
                 i+=1
-                tree_seg.update({ '{}     ({})'.format(part_no, part.Name): {}})
+                tree_seg.update({ str(part_no).ljust(26): {} })
                 
             except KeyError:          # then it is a subassembly not a part
                 try:
@@ -157,7 +157,7 @@ def build(folder_path, config, outfn, supplier, plot):
                     sa_fn = os.path.split(sub_assem_file)[-1]              # get subassembly name
                     sa = pd.read_excel(sub_assem_file)                     # read in subassembly
                     df, i, tree_seg_r = loop(df, sa, row.QTY, i, sa_fn)    # call loop() again
-                    tree_seg = {**tree_seg,**{ sa_fn: tree_seg_r }}
+                    tree_seg = { **tree_seg, **{ str(sa_fn).replace('.xlsx',''): tree_seg_r } }
 
         return df, i, tree_seg
     
