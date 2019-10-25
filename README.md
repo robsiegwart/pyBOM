@@ -47,7 +47,7 @@ In *BOM.xlsx* there are parts/sub-assemblies, and their quantities:
 | 3        | Brack1       | 1       |
 | 4        | Subassem1    | 1       |
 
-When parsing throught the BOM files, the program first looks in the *Parts.xlsx* file treating it as a part, and if there is no match then it looks in the list of files assuming it is a sub-assembly. If there is no match in either it prints a message to the console and and skips to the next part.
+When parsing through the BOM files, the program first looks in the *Parts.xlsx* file treating it as a part, and if there is no match then it looks in the list of files assuming it is a sub-assembly. If there is no match in either it prints a message to the console and and skips to the next part.
 
 *Subassem1.xlsx* also references parts from the parts list:
 
