@@ -117,13 +117,13 @@ Example\
 #### ASCII Tree.txt
 ```
 BOM
- +-- Scr1     (Screw)
- +-- Nut1     (Nut)
- +-- Brack1     (Bracket1)
- +-- SubAssem1.xlsx
-     +-- Brack2     (Bracket2)
-     +-- Scr1     (Screw)
-     +-- Nut1     (Nut)
+ +-- Scr1                      
+ +-- Nut1                      
+ +-- Brack1                    
+ +-- SubAssem1
+     +-- Brack2                    
+     +-- Scr1                      
+     +-- Nut1
 ```
 
 
@@ -138,6 +138,7 @@ Options:
   --plot         Create an ASCII representation of the BOM structure.
   --help         Show this message and exit.
 ```
+
 
 ## Requirements
 The following Python packages are required:
