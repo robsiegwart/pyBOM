@@ -152,5 +152,5 @@ A *config.ini* file may be used to specify alternate names for the *Parts.xlsx* 
 ```
 [DEFAULT]
 PARTS_DB = Parts.xlsx              # Set the file which stores the parts
-TOP_LEVEL_ASSY = Main BOM.xlsx     # Set the file which is the top level assembly
+TOP_LEVEL_ASSY = BOM.xlsx          # Set the file which is the top level assembly
 ```
