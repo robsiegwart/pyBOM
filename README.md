@@ -29,7 +29,6 @@ Example\
 
 *Parts.xlsx* serves as the single point of reference for part information, with the following data:
 
-
 | PartNo     | Name       | Description       | Supplier         | Supplier PartNo     | Pkg QTY    | Pkg Price   |
 | ---------- | ---------- | ----------------- | ---------------- | ------------------- | ---------- | ----------- |
 | Scr1       | Screw      | 1/4-20 SHCS       | McMaster-Carr    | 92220A186           | 50         | 12.86       |
@@ -79,14 +78,14 @@ Example\
 
 #### BOM_flat.xlsx
 
-|    PartNo | Name      | QTY  | Parent Assy     | Pkg Price   | Pkg QTY  | Supplier         | Supplier PartNo |
-| -- ------ | --------- | ---- | --------------- | ----------- | -------- | ---------------- | --------------- |
-| 1  Scr1   | Screw     | 4    | BOM             | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
-| 2  Nut1   | Nut       | 4    | BOM             | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
-| 3  Brack1 | Bracket1  | 1    | BOM             | 8           | 1        |  Fabricator      | BR0234          |
-| 4  Brack2 | Bracket2  | 1    | SubAssem1.xlsx  | 14          | 1        |  Fabricator      | BR4234          |
-| 5  Scr1   | Screw     | 8    | SubAssem1.xlsx  | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
-| 6  Nut1   | Nut       | 8    | SubAssem1.xlsx  | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
+|   | PartNo | Name      | QTY  | Parent Assy     | Pkg Price   | Pkg QTY  | Supplier         | Supplier PartNo |
+| - | ------ | --------- | ---- | --------------- | ----------- | -------- | ---------------- | --------------- |
+| 1 | Scr1   | Screw     | 4    | BOM             | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
+| 2 | Nut1   | Nut       | 4    | BOM             | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
+| 3 | Brack1 | Bracket1  | 1    | BOM             | 8           | 1        |  Fabricator      | BR0234          |
+| 4 | Brack2 | Bracket2  | 1    | SubAssem1.xlsx  | 14          | 1        |  Fabricator      | BR4234          |
+| 5 | Scr1   | Screw     | 8    | SubAssem1.xlsx  | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
+| 6 | Nut1   | Nut       | 8    | SubAssem1.xlsx  | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
 
 
 #### BOM_flat-grouped.xlsx
