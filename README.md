@@ -47,6 +47,7 @@ In *BOM.xlsx* there are parts/sub-assemblies, and their quantities:
 | 3        | Brack1       | 1       |
 | 4        | Subassem1    | 1       |
 
+When parsing, the program first looks in the Parts.xlsx file, and if there is no match then it looks in the list of files treating it as a sub-assembly. If there is no match it tells you there was no match and skips to the next part.
 
 *Subassem1.xlsx* also references parts from the parts list:
 
@@ -125,7 +126,6 @@ BOM
      +-- Scr1     (Screw)
      +-- Nut1     (Nut)
 ```
-
 
 
 ## Usage
