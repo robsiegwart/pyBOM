@@ -29,33 +29,33 @@ Example\
 
 *Parts.xlsx* serves as the single point of reference for part information, with the following data:
 
-```
-PartNo     Name       Description       Supplier         Supplier PartNo     Pkg QTY    Pkg Price
----------- ---------- ----------------- ---------------- ------------------- ---------- -----------
-Scr1       Screw      1/4-20 SHCS       McMaster-Carr    92220A186           50         12.86
-Nut1       Nut        1/4-20 Hex nut    McMaster-Carr    95479A111           50         4.88
-Brack1     Bracket1   Bracket           Fabricator       BR0234              1          8.00
-Brack2     Bracket2   Bracket           Fabricator       BR4234              1          14.00 
-```
+
+| PartNo     | Name       | Description       | Supplier         | Supplier PartNo     | Pkg QTY    | Pkg Price   |
+| ---------- | ---------- | ----------------- | ---------------- | ------------------- | ---------- | ----------- |
+| Scr1       | Screw      | 1/4-20 SHCS       | McMaster-Carr    | 92220A186           | 50         | 12.86       |
+| Nut1       | Nut        | 1/4-20 Hex nut    | McMaster-Carr    | 95479A111           | 50         | 4.88        |
+| Brack1     | Bracket1   | Bracket           | Fabricator       | BR0234              | 1          | 8.00        |
+| Brack2     | Bracket2   | Bracket           | Fabricator       | BR4234              | 1          | 14.00       |
+
 
 In *BOM.xlsx* there are parts/sub-assemblies, and their quantities:
-```
-Item     PartNo       QTY
--------- ------------ -------
-1        Scr1         4
-2        Nut1         4
-3        Brack1       1
-4        Subassem1    1
-```
+
+| Item     | PartNo       | QTY     |
+| -------- | ------------ | ------- |
+| 1        | Scr1         | 4       |
+| 2        | Nut1         | 4       |
+| 3        | Brack1       | 1       |
+| 4        | Subassem1    | 1       |
+
 
 *Subassem1.xlsx* also references parts from the parts list:
-```
-Item    PartNo    QTY
-------- --------- --------
-1       Brack2    1
-2       Scr1      8
-3       Nut1      8
-```
+
+| Item    | PartNo    | QTY      |
+| ------- | --------- | -------- |
+| 1       | Brack2    | 1        |
+| 2       | Scr1      | 8        |
+| 3       | Nut1      | 8        |
+
 
 With this BOM structure we obtain the following:
 
@@ -77,42 +77,42 @@ Example\
 ```
 
 #### BOM_flat.xlsx
-```
-   PartNo Name      QTY  Parent Assy     Pkg Price   Pkg QTY  Supplier         Supplier PartNo
--- ------ --------- ---- --------------- ----------- -------- ---------------- ---------------
-1  Scr1   Screw     4    BOM             12.86       50        McMaster-Carr   92220A186
-2  Nut1   Nut       4    BOM             4.88        50        McMaster-Carr   95479A111
-3  Brack1 Bracket1  1    BOM             8           1         Fabricator      BR0234
-4  Brack2 Bracket2  1    SubAssem1.xlsx  14          1         Fabricator      BR4234
-5  Scr1   Screw     8    SubAssem1.xlsx  12.86       50        McMaster-Carr   92220A186
-6  Nut1   Nut       8    SubAssem1.xlsx  4.88        50        McMaster-Carr   95479A111
-```
+
+|    PartNo | Name      | QTY  | Parent Assy     | Pkg Price   | Pkg QTY  | Supplier         | Supplier PartNo |
+| -- ------ | --------- | ---- | --------------- | ----------- | -------- | ---------------- | --------------- |
+| 1  Scr1   | Screw     | 4    | BOM             | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
+| 2  Nut1   | Nut       | 4    | BOM             | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
+| 3  Brack1 | Bracket1  | 1    | BOM             | 8           | 1        |  Fabricator      | BR0234          |
+| 4  Brack2 | Bracket2  | 1    | SubAssem1.xlsx  | 14          | 1        |  Fabricator      | BR4234          |
+| 5  Scr1   | Screw     | 8    | SubAssem1.xlsx  | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
+| 6  Nut1   | Nut       | 8    | SubAssem1.xlsx  | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
+
 
 #### BOM_flat-grouped.xlsx
-```
-   PartNo  Name      QTY   Pkg QTY   Pkg Price   Pkg Req   Extended   Supplier        Supplier PartNo
--- ------- --------- ----- --------- ----------- --------- ---------- --------------- -----------------
-1  Brack1  Bracket1  1     1         8           1         8          Fabricator      BR0234
-2  Brack2  Bracket2  1     1         14          1         14         Fabricator      BR4234
-3  Nut1    Nut       12    50        4.88        1         4.88       McMaster-Carr   95479A111
-4  Scr1    Screw     12    50        12.86       1         12.86      McMaster-Carr   92220A186
-```
+
+|    | PartNo  | Name      | QTY   | Pkg QTY   | Pkg Price   | Pkg Req   | Extended   | Supplier        | Supplier PartNo   |
+| -- | ------- | --------- | ----- | --------- | ----------- | --------- | ---------- | --------------- | ----------------- |
+| 1  | Brack1  | Bracket1  | 1     | 1         | 8           | 1         | 8          | Fabricator      | BR0234            |
+| 2  | Brack2  | Bracket2  | 1     | 1         | 14          | 1         | 14         | Fabricator      | BR4234            |
+| 3  | Nut1    | Nut       | 12    | 50        | 4.88        | 1         | 4.88       | McMaster-Carr   | 95479A111         |
+| 4  | Scr1    | Screw     | 12    | 50        | 12.86       | 1         | 12.86      | McMaster-Carr   | 92220A186         |
+
 
 #### BOM_flat-Fabricator.xlsx
-```
-   PartNo   Name       QTY  Pkg QTY  Pkg Price   Pkg Req   Extended   Supplier      Supplier PartNo
--- -------- ---------- ---- -------- ----------- --------- ---------- ------------- ----------------
-1  Brack1   Bracket1   1    1        8           1         8          Fabricator    BR0234
-2  Brack2   Bracket2   1    1        14          1         14         Fabricator    BR4234
-```
+
+|    | PartNo   | Name       | QTY  | Pkg QTY  | Pkg Price   | Pkg Req   | Extended   | Supplier      | Supplier PartNo  |
+| -- | -------- | ---------- | ---- | -------- | ----------- | --------- | ---------- | ------------- | ---------------- |
+| 1  | Brack1   | Bracket1   | 1    | 1        | 8           | 1         | 8          | Fabricator    | BR0234           |
+| 2  | Brack2   | Bracket2   | 1    | 1        | 14          | 1         | 14         | Fabricator    | BR4234           |
+
 
 #### BOM_flat-McMaster-Carr.xlsx
-```
-   PartNo   Name   QTY  Pkg QTY   Pkg Price   Pkg Req   Extended   Supplier Supplier   PartNo
--- -------- ------ ---- --------- ----------- --------- ---------- ------------------- ------------
-3  Nut1     Nut    12   50        4.88        1         4.88       McMaster-Carr       95479A111
-4  Scr1     Screw  12   50        12.86       1         12.86      McMaster-Carr       92220A186
-```
+
+|    | PartNo   | Name   | QTY  | Pkg QTY   | Pkg Price   | Pkg Req   | Extended   | Supplier Supplier   | PartNo       |
+| -- | -------- | ------ | ---- | --------- | ----------- | --------- | ---------- | ------------------- | ------------ |
+| 3  | Nut1     | Nut    | 12   | 50        | 4.88        | 1         | 4.88       | McMaster-Carr       | 95479A111    |
+| 4  | Scr1     | Screw  | 12   | 50        | 12.86       | 1         | 12.86      | McMaster-Carr       | 92220A186    |
+
 
 #### ASCII Tree.txt
 ```
