@@ -1,6 +1,6 @@
 # python-BOM
 
-A Python program for flattening a layered bill-of-material (BOM) based on Excel files. Part quantities are combined and a minimum-required-package-to-buy amount is calculated, in addition to total costs. An ASCII hierarchy tree can also optionally be created.
+A Python program for flattening a layered bill-of-material (BOM) based on Excel files. Part quantities are combined and a minimum-required-package-to-buy amount is calculated, in addition to extended costs. An ASCII hierarchy tree can also optionally be created.
 
 Output BOMs are placed in a subdirectory of your source folder called 'flattened' by default. Produced files in this folder include:
   - a full flat BOM (containing duplicate parts)
@@ -129,7 +129,7 @@ BOM
 
 ## Usage
 ```
-$ BOM.py build [OPTIONS] FOLDER_PATH
+$ python BOM.py build [OPTIONS] FOLDER_PATH
 
 Options:
   --config TEXT  Specify an alternate configuration using "config.ini".
