@@ -1,11 +1,22 @@
 '''
 Title:          Python Bill-of-Material Generator (BOM)
+
 Author:         RSS
-Description:    Builds a multi-level and flattened BOM based on elemental data.
-Usage:          from a terminal call this program with the folder containining
+
+Description:    Builds a multi-level and flattened BOM based on elemental data stored in
+                Excel files.
+
+Usage:          From a terminal call this program with the folder containining
                 your source files.
 
-                $ python BOM.py my_folder [config]
+                $ python BOM.py build [OPTIONS] FOLDER_PATH
+
+                Options:
+                    --config TEXT  Specify an alternate configuration using "config.ini".
+                    --outfn TEXT   Output filename stem.
+                    --supplier     Create individual supplier BOMs
+                    --plot         Create an ASCII representation of the BOM structure.
+                    --help         Show this message and exit.
 
 '''
 
@@ -17,8 +28,6 @@ import pandas as pd
 import numpy as np
 import click
 from asciitree import LeftAligned
-
-
 
 
 @click.group()
