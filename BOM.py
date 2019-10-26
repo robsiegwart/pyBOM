@@ -52,11 +52,13 @@ def simplify_BOM(BOM_0):
     BOM_sum = BOM_sum.groupby(['PartNo']).sum()
 
     BOM2 = BOM_0.drop(['QTY','Parent Assy'],axis=1).drop_duplicates()
-
     BOM = BOM_sum.join(BOM2.set_index('PartNo'))
+
+    # calculate derived quantities
     BOM['Pkg Req'] = np.ceil(BOM.QTY/BOM['Pkg QTY'])
     BOM['Extended'] = BOM['Pkg Req']*BOM['Pkg Price']
     
+    # reset numerical 'Item' numbering
     BOM = BOM.reset_index()
     BOM = BOM[['PartNo','Name','QTY','Pkg QTY','Pkg Price','Pkg Req','Extended','Supplier','Supplier PartNo']]
     BOM = BOM.set_index(pd.RangeIndex(1,len(BOM)+1))
@@ -87,7 +89,7 @@ def build(folder_path, config, outfn, supplier, plot):
     # Get files
     files = glob.glob(folder_path+'\\*.xlsx')
     files = list(filter(lambda x: '\\~' not in x, files))
-    files_names = list(map(lambda x: x.replace(folder_path+'\\',''), files))
+    files_names = list(map(lambda x: os.path.split(x)[-1], files))
     
     # filenames
     parts_file = list(filter(lambda x: PARTS_DB in x, files))[0]
