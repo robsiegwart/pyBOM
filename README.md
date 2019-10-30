@@ -5,7 +5,7 @@ A Python program for flattening a layered bill-of-material (BOM) based on Excel 
 Output BOMs are placed in a subdirectory of your source folder called 'flattened' by default. Produced files in this folder include:
   - a full flat BOM (containing duplicate parts)
   - a grouped flat BOM (duplicate parts merged with QTY's summed)
-  - (optional) an ASCII tree representation of the BOM structure, when the `--plot` flag is used
+  - (optional) an ASCII tree representation of the BOM structure, when the `--tree` flag is used
   - (optional) a separate BOM for each supplier, when the `--supplier` flag is used
 
 ## Motivation
@@ -135,7 +135,7 @@ Options:
   --config TEXT  Specify an alternate configuration using "config.ini".
   --outfn TEXT   Output filename stem.
   --supplier     Create individual supplier BOMs
-  --plot         Create an ASCII representation of the BOM structure.
+  --tree         Create an ASCII representation of the BOM structure.
   --help         Show this message and exit.
 ```
 

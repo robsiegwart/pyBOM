@@ -15,7 +15,7 @@ Usage:          From a terminal call this program with the folder containining
                     --config TEXT  Specify an alternate configuration using "config.ini".
                     --outfn TEXT   Output filename stem.
                     --supplier     Create individual supplier BOMs
-                    --plot         Create an ASCII representation of the BOM structure.
+                    --tree         Create an ASCII representation of the BOM structure.
                     --help         Show this message and exit.
 
 '''
@@ -25,7 +25,7 @@ import glob
 import os
 import configparser
 import pandas as pd
-import numpy as np
+from numpy import ceil
 import click
 from asciitree import LeftAligned
 
@@ -33,14 +33,6 @@ from asciitree import LeftAligned
 @click.group()
 def cli():
     pass
-
-# @click.command()
-# @click.argument('folder_path',type=click.Path(exists=True))
-# @click.argument('existing_num')
-# @click.argument('new_num')
-# def PNrename(existing_num,new_num):
-#     ''' Rename a part number across all BOM files. '''
-#     pass
 
 
 def simplify_BOM(BOM_0):
@@ -55,7 +47,7 @@ def simplify_BOM(BOM_0):
     BOM = BOM_sum.join(BOM2.set_index('PartNo'))
 
     # calculate derived quantities
-    BOM['Pkg Req'] = np.ceil(BOM.QTY/BOM['Pkg QTY'])
+    BOM['Pkg Req'] = ceil(BOM.QTY/BOM['Pkg QTY'].astype('float'))
     BOM['Extended'] = BOM['Pkg Req']*BOM['Pkg Price']
     
     # reset numerical 'Item' numbering
@@ -70,8 +62,8 @@ def simplify_BOM(BOM_0):
 @click.option('--config', default='DEFAULT', help='Specify an alternate configuration using "config.ini".')
 @click.option('--outfn', default='BOM_flat', help='Output filename stem.')
 @click.option('--supplier', default=False, is_flag=True, help='Create individual supplier BOMs')
-@click.option('--plot', default=False, is_flag=True, help='Create an ASCII representation of the BOM structure.')
-def build(folder_path, config, outfn, supplier, plot):
+@click.option('--tree', default=False, is_flag=True, help='Create an ASCII representation of the BOM structure.')
+def build(folder_path, config, outfn, supplier, tree):
     '''
     Build a flat BOM from multi-level Excel BOM files.
 
@@ -114,6 +106,7 @@ def build(folder_path, config, outfn, supplier, plot):
     BOM_flat = pd.DataFrame(columns=output_columns)
 
     # check that the required columns are there
+    #
     # the program needs PartNo, Pkg Price, Pkg QTY, and Supplier in the Parts Database
     # and PartNo and QTY in each of the BOM files
     req_part_labels = {'PartNo','Pkg Price','Supplier','Pkg QTY'}
@@ -132,9 +125,6 @@ def build(folder_path, config, outfn, supplier, plot):
         if net_cols:
             print('File {} needs additional columns: {}'.format(file,net_cols))
             return
-
-    # ASCII tree container
-    tree = {}
 
     # Reading loop function
     def loop(df, BOM=None, BOM_QTY=1, i=1, fn=BOM_file_name):
@@ -164,10 +154,10 @@ def build(folder_path, config, outfn, supplier, plot):
         return df, i, tree_seg
     
     # Call loop function and generate flat BOMs
-    BOM_flat, i, tree = loop(BOM_flat,BOM)
+    BOM_flat, i, tree_dict = loop(BOM_flat,BOM)
     BOM_flat_grouped = simplify_BOM(BOM_flat)
 
-    tree = { BOM_file_name: tree }
+    tree_dict = { BOM_file_name: tree_dict }
 
     # Save out BOMs
     out_dir = os.path.join(folder_path,'flattened')
@@ -182,17 +172,16 @@ def build(folder_path, config, outfn, supplier, plot):
         for supplier in suppliers:
             BOM_flat_grouped.query('Supplier == @supplier').to_excel(os.path.join(out_dir,'{}-{}.xlsx'.format(outfn,supplier)))
 
-    # Create ASCII hierarchy plot
-    if plot:
+    # Create ASCII hierarchy tree plot
+    if tree:
         LA = LeftAligned()
-        ASCII_tree = LA(tree)
+        ASCII_tree = LA(tree_dict)
         with open(os.path.join(out_dir,'ASCII Tree.txt'),'w') as f:
             f.write(ASCII_tree)
 
 
 
 cli.add_command(build)
-# cli.add_command(PNrename)
 
 
 if __name__ == '__main__':
