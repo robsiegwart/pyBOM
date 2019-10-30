@@ -57,7 +57,7 @@ When parsing through the BOM files, the program first looks in the *Parts.xlsx* 
 | 3       | Nut1      | 8        |
 
 
-With this BOM structure we obtain the following:
+With this BOM structure and command we obtain the following:
 
 ```
 $ python BOM.py build Example --plot --supplier
