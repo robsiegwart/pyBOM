@@ -60,7 +60,7 @@ When parsing through the BOM files, the program first looks in the *Parts.xlsx* 
 With this BOM structure and command we obtain the following:
 
 ```
-$ python BOM.py build Example --plot --supplier
+$ python BOM.py Example --plot --supplier
 ```
 
 ```
@@ -129,7 +129,7 @@ BOM
 
 ## Usage
 ```
-$ python BOM.py build [OPTIONS] FOLDER_PATH
+$ python BOM.py [OPTIONS] FOLDER_PATH
 
 Options:
   --config TEXT  Specify an alternate configuration using "config.ini".
