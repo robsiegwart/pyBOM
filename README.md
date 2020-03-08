@@ -60,7 +60,7 @@ When parsing through the BOM files, the program first looks in the *Parts.xlsx* 
 With this BOM structure and command we obtain the following:
 
 ```
-$ python BOM.py Example --plot --supplier
+$ python BOM.py Example --tree --supplier
 ```
 
 ```
