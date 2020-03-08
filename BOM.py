@@ -1,22 +1,40 @@
+# MIT License
+# 
+# Copyright (c) 2020 Rob Siegwart
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 '''
-Title:          Python Bill-of-Material Generator (BOM)
 
-Author:         RSS
 
-Description:    Builds a multi-level and flattened BOM based on elemental data stored in
-                Excel files.
+Build a multi-level and flattened BOM based on elemental data stored in Excel
+files.
 
-Usage:          From a terminal call this program with the folder containining
-                your source files.
+From a terminal call this program with the folder containing your source files.
 
-                $ python BOM.py build [OPTIONS] FOLDER_PATH
+    $ python BOM.py build [OPTIONS] FOLDER_PATH
 
-                Options:
-                    --config TEXT  Specify an alternate configuration using "config.ini".
-                    --outfn TEXT   Output filename stem.
-                    --supplier     Create individual supplier BOMs
-                    --tree         Create an ASCII representation of the BOM structure.
-                    --help         Show this message and exit.
+    Options:
+        --config TEXT  Specify an alternate configuration using "config.ini".
+        --outfn TEXT   Output filename stem.
+        --supplier     Create individual supplier BOMs
+        --tree         Create an ASCII representation of the BOM structure.
+        --help         Show this message and exit.
 
 '''
 
