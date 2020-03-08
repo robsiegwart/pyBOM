@@ -20,14 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 '''
-
-
 Build a multi-level and flattened BOM based on elemental data stored in Excel
 files.
 
 From a terminal call this program with the folder containing your source files.
 
-    $ python BOM.py build [OPTIONS] FOLDER_PATH
+    $ python BOM.py [OPTIONS] FOLDER_PATH
 
     Options:
         --config TEXT  Specify an alternate configuration using "config.ini".
@@ -47,10 +45,6 @@ from numpy import ceil
 import click
 from asciitree import LeftAligned
 
-
-@click.group()
-def cli():
-    pass
 
 
 def simplify_BOM(BOM_0):
@@ -199,8 +193,6 @@ def build(folder_path, config, outfn, supplier, tree):
 
 
 
-cli.add_command(build)
-
 
 if __name__ == '__main__':
-    cli()
+    build()
