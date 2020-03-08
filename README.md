@@ -33,8 +33,8 @@ Example\
 | ---------- | ---------- | ----------------- | ---------------- | ------------------- | ---------- | ----------- |
 | Scr1       | Screw      | 1/4-20 SHCS       | McMaster-Carr    | 92220A186           | 50         | 12.86       |
 | Nut1       | Nut        | 1/4-20 Hex nut    | McMaster-Carr    | 95479A111           | 50         | 4.88        |
-| Brack1     | Bracket1   | Bracket           | Fabricator       | BR0234              | 1          | 8.00        |
-| Brack2     | Bracket2   | Bracket           | Fabricator       | BR4234              | 1          | 14.00       |
+| Brack1     | Bracket 1  | Bracket           | Fabricator       | BR0234              | 1          | 8.00        |
+| Brack2     | Bracket 2  | Bracket           | Fabricator       | BR4234              | 1          | 14.00       |
 
 
 In *BOM.xlsx* there are parts/sub-assemblies, and their quantities:
@@ -82,8 +82,8 @@ Example\
 | - | ------ | --------- | ---- | --------------- | ----------- | -------- | ---------------- | --------------- |
 | 1 | Scr1   | Screw     | 4    | BOM             | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
 | 2 | Nut1   | Nut       | 4    | BOM             | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
-| 3 | Brack1 | Bracket1  | 1    | BOM             | 8           | 1        |  Fabricator      | BR0234          |
-| 4 | Brack2 | Bracket2  | 1    | SubAssem1.xlsx  | 14          | 1        |  Fabricator      | BR4234          |
+| 3 | Brack1 | Bracket 1 | 1    | BOM             | 8           | 1        |  Fabricator      | BR0234          |
+| 4 | Brack2 | Bracket 2 | 1    | SubAssem1.xlsx  | 14          | 1        |  Fabricator      | BR4234          |
 | 5 | Scr1   | Screw     | 8    | SubAssem1.xlsx  | 12.86       | 50       |  McMaster-Carr   | 92220A186       |
 | 6 | Nut1   | Nut       | 8    | SubAssem1.xlsx  | 4.88        | 50       |  McMaster-Carr   | 95479A111       |
 
@@ -92,8 +92,8 @@ Example\
 
 |    | PartNo  | Name      | QTY   | Pkg QTY   | Pkg Price   | Pkg Req   | Extended   | Supplier        | Supplier PartNo   |
 | -- | ------- | --------- | ----- | --------- | ----------- | --------- | ---------- | --------------- | ----------------- |
-| 1  | Brack1  | Bracket1  | 1     | 1         | 8           | 1         | 8          | Fabricator      | BR0234            |
-| 2  | Brack2  | Bracket2  | 1     | 1         | 14          | 1         | 14         | Fabricator      | BR4234            |
+| 1  | Brack1  | Bracket 1 | 1     | 1         | 8           | 1         | 8          | Fabricator      | BR0234            |
+| 2  | Brack2  | Bracket 2 | 1     | 1         | 14          | 1         | 14         | Fabricator      | BR4234            |
 | 3  | Nut1    | Nut       | 12    | 50        | 4.88        | 1         | 4.88       | McMaster-Carr   | 95479A111         |
 | 4  | Scr1    | Screw     | 12    | 50        | 12.86       | 1         | 12.86      | McMaster-Carr   | 92220A186         |
 
@@ -102,8 +102,8 @@ Example\
 
 |    | PartNo   | Name       | QTY  | Pkg QTY  | Pkg Price   | Pkg Req   | Extended   | Supplier      | Supplier PartNo  |
 | -- | -------- | ---------- | ---- | -------- | ----------- | --------- | ---------- | ------------- | ---------------- |
-| 1  | Brack1   | Bracket1   | 1    | 1        | 8           | 1         | 8          | Fabricator    | BR0234           |
-| 2  | Brack2   | Bracket2   | 1    | 1        | 14          | 1         | 14         | Fabricator    | BR4234           |
+| 1  | Brack1   | Bracket 1  | 1    | 1        | 8           | 1         | 8          | Fabricator    | BR0234           |
+| 2  | Brack2   | Bracket 2  | 1    | 1        | 14          | 1         | 14         | Fabricator    | BR4234           |
 
 
 #### BOM_flat-McMaster-Carr.xlsx
