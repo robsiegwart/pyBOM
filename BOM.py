@@ -23,26 +23,36 @@
 '''
 Build a multi-level and flattened BOM based on elemental data stored in Excel
 files.
-
-Call this program with the the name of the top level BOM file. Output files will
-be put into a new sub-directory "publish".
-
-    $ pybom [OPTIONS] TOPLEVELBOM
-
-    Options:
-        --supplier     Create individual supplier BOMs
-        --tree         Create an ASCII representation of the BOM structure.
-        --help         Show this message and exit.
 '''
 
 import sys
 import glob
 import os
-# import configparser
 import pandas as pd
 from numpy import ceil
 import click
 from anytree import NodeMixin, RenderTree
+
+
+class Item(NodeMixin):
+    '''
+    A row in a BOM. Represents a part, subassembly, or document/drawing.
+    '''
+    def __init__(self, PN, parent=None, **kwargs):
+        self.PN = PN
+        self.parent = parent
+        self.children = []
+        self.kwargs ={}
+        for k,v in kwargs.items():
+            try:
+                setattr(self, k, v)
+            except AttributeError:
+                self.kwargs.update({k:v})
+    
+    def __repr__(self):
+        return self.PN
+    
+    __str__ = __repr__
 
 
 class BOMProject:
@@ -62,13 +72,19 @@ class BOMProject:
         # String name variables
         self.directory = directory
         self.xlsx_files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) ]
-        self.subassem_files = list(filter(lambda x: self.fn_base(x).lower() not in self.MASTER_FILE, self.xlsx_files))
+        self.assembly_files = list(filter(lambda x: self.fn_base(x).lower() not in self.MASTER_FILE, self.xlsx_files))
         self.master_file = list(filter(lambda x: self.fn_base(x).lower() in self.MASTER_FILE, self.xlsx_files))[0]
 
         # BOM object variables
-        self.assemblies = [ BOM.from_filename(os.path.join(self.directory, file), name=self.fn_base(file)) for file in self.subassem_files ]
+        self.assemblies = [ BOM.from_filename(os.path.join(self.directory, file), name=self.fn_base(file)) for file in self.assembly_files ]
         self.master = BOM.from_filename(os.path.join(self.directory, self.master_file), name=self.fn_base(self.master_file))
+        
         self.root_BOM = None
+        self.items = []
+    
+    @property
+    def parts(self):
+        return self.master.data['PN'].to_list()
     
     def fn_base(self, arg):
         '''
@@ -90,12 +106,14 @@ class BOMProject:
             return None
 
     def generate_structure(self):
-        sub_names = self.fn_base(self.subassem_files)
+        assem_names = self.fn_base(self.assembly_files)
         for bom in self.assemblies:
-            for i,PN in bom.data['PN'].items():
-                if PN in sub_names:
-                    sub_bom = self.get_assembly_by_name(PN)
+            for i,item in bom.data.iterrows():
+                if item.PN in assem_names:
+                    sub_bom = self.get_assembly_by_name(item.PN)
                     sub_bom.parent = bom
+                else:
+                    self.items.append(Item(**{**item.to_dict(), **{'parent': bom}}))
                 
     def print_tree(self):
         self.generate_structure()
@@ -151,5 +169,4 @@ class BOM(NodeMixin):
     def __repr__(self):
         return self.name if self.name else f'BOM with {len(self.data)} items'
     
-    def __str__(self):
-        return self.name + '\n\n' + str(self.data) + '\n'
+    __str__ = __repr__
