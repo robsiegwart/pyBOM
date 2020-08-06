@@ -59,18 +59,55 @@ class BOMProject:
     file"""
 
     def __init__(self, directory):
+        # String name variables
         self.directory = directory
         self.xlsx_files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) ]
-        self.subassem_files = list(filter(lambda x: self.fn_stub(x).lower() not in self.MASTER_FILE, self.xlsx_files))
-        self.master_file = list(filter(lambda x: self.fn_stub(x).lower() in self.MASTER_FILE, self.xlsx_files))[0]
+        self.subassem_files = list(filter(lambda x: self.fn_base(x).lower() not in self.MASTER_FILE, self.xlsx_files))
+        self.master_file = list(filter(lambda x: self.fn_base(x).lower() in self.MASTER_FILE, self.xlsx_files))[0]
 
-        self.subassemblies = [ BOM.from_filename(os.path.join(self.directory, file), name=file) for file in self.subassem_files ]
-        self.master = BOM.from_filename(os.path.join(self.directory, self.master_file), name=self.master_file)
+        # BOM object variables
+        self.assemblies = [ BOM.from_filename(os.path.join(self.directory, file), name=self.fn_base(file)) for file in self.subassem_files ]
+        self.master = BOM.from_filename(os.path.join(self.directory, self.master_file), name=self.fn_base(self.master_file))
+        self.root_BOM = None
     
-    def fn_stub(self, filename):
-        return '.'.join(filename.split('.')[:-1])
+    def fn_base(self, arg):
+        '''
+        Return the part of a filename without the file extension. ::
 
-    def generate_structure
+            Foo_12.34.xlsx   =>   Foo_12.34
+
+        :param arg:     String or list of strings to remove extension.
+        :return:        String or list of strings
+        '''
+        if isinstance(arg, list):
+            return [ self.fn_base(item) for item in arg ]
+        return '.'.join(arg.split('.')[:-1])
+    
+    def get_assembly_by_name(self, name):
+        try:
+            return [ bom for bom in self.assemblies if bom.name == name][0]
+        except TypeError:
+            return None
+
+    def generate_structure(self):
+        sub_names = self.fn_base(self.subassem_files)
+        for bom in self.assemblies:
+            for i,PN in bom.data['PN'].items():
+                if PN in sub_names:
+                    sub_bom = self.get_assembly_by_name(PN)
+                    sub_bom.parent = bom
+                
+    def print_tree(self):
+        self.generate_structure()
+        count = 0
+        for bom in self.assemblies:
+            if not bom.parent:
+                if count > 1:
+                    raise Exception('Multiple root BOMs found')
+                count += 1
+                self.root_BOM = bom
+
+        print(RenderTree(self.root_BOM))
     
 
 class BOM(NodeMixin):
@@ -112,7 +149,7 @@ class BOM(NodeMixin):
         return list(self.data['PN'])
 
     def __repr__(self):
-        return f'{self.name} ({len(self.data)} items)' if self.name else f'BOM with {len(self.data)} items'
+        return self.name if self.name else f'BOM with {len(self.data)} items'
     
     def __str__(self):
         return self.name + '\n\n' + str(self.data) + '\n'
