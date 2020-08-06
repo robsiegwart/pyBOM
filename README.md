@@ -68,12 +68,12 @@ Example\
  +-- BOM.xlsx
  +-- Parts.xlsx
  +-- SubAssem1.xlsx
- +-- flattened\            <-- Output directory
-     +-- ASCII Tree.txt
-     +-- BOM_flat.xlsx
-     +-- BOM_flat-Fabricator.xlsx
-     +-- BOM_flat-grouped.xlsx
-     +-- BOM_flat-McMaster-Carr.xlsx
+publish\            <-- Output directory
+ +-- ASCII Tree.txt
+ +-- BOM_flat.xlsx
+ +-- BOM_flat-Fabricator.xlsx
+ +-- BOM_flat-grouped.xlsx
+ +-- BOM_flat-McMaster-Carr.xlsx
 ```
 
 #### BOM_flat.xlsx

@@ -34,7 +34,6 @@ From a terminal call this program with the folder containing your source files.
         --supplier     Create individual supplier BOMs
         --tree         Create an ASCII representation of the BOM structure.
         --help         Show this message and exit.
-
 '''
 
 import sys
@@ -49,8 +48,11 @@ from asciitree import LeftAligned
 
 def simplify_BOM(BOM_0):
     '''
-    Combine duplicate Parts in a BOM and sum total QTY's.
-    Calculate a mininum-required-package-to-buy parameter.
+    Combine duplicate Parts in a BOM and sum total QTY's. Calculate a
+    mininum-required-package-to-buy parameter.
+
+    :param DataFrame BOM_0:     Input BOM DataFrame
+    :return DataFrame:
     '''
     BOM_sum = BOM_0[['PartNo','QTY']]
     BOM_sum = BOM_sum.groupby(['PartNo']).sum()
@@ -71,17 +73,22 @@ def simplify_BOM(BOM_0):
 
 @click.command()
 @click.argument('folder_path', type=click.Path(exists=True))
-@click.option('--config', default='DEFAULT', help='Specify an alternate configuration using "config.ini".')
-@click.option('--outfn', default='BOM_flat', help='Output filename stem.')
+@click.option('--config', default='DEFAULT', help='Specify an alternate configuration using "config.ini"')
+@click.option('--outfn', default='BOM_flat', help='Output filename')
 @click.option('--supplier', default=False, is_flag=True, help='Create individual supplier BOMs')
-@click.option('--tree', default=False, is_flag=True, help='Create an ASCII representation of the BOM structure.')
+@click.option('--tree', default=False, is_flag=True, help='Create an ASCII representation of the BOM structure')
 def build(folder_path, config, outfn, supplier, tree):
     '''
     Build a flat BOM from multi-level Excel BOM files.
 
-    FOLDER_PATH is the path to a folder where the BOM files are stored.
-
-    .xlsx format is used.
+    :param str folder_path:     The source directory of BOM files.
+    :param str config:          Specify an alternate configuration using
+                                "config.ini". Defaults to DEFAULT.
+    :param str outfn:           Output filename (exluding extension). Defaults
+                                to BOM_flat.
+    :param bool supplier:       Create individual supplier BOMs (default False)
+    :param bool tree:           Create an ASCII representation of the BOM
+                                structure (default False)
     '''
     # Read configuration
     Config = configparser.ConfigParser(defaults={'PARTS_DB':'Parts.xlsx',
@@ -95,7 +102,7 @@ def build(folder_path, config, outfn, supplier, tree):
     files = list(filter(lambda x: '\\~' not in x, files))
     files_names = list(map(lambda x: os.path.split(x)[-1], files))
     
-    # filenames
+    # Get filenames
     parts_file = list(filter(lambda x: PARTS_DB in x, files))[0]
     BOM_file = list(filter(lambda x: TOP_LEVEL_BOM in x, files))[0]
     BOM_file_name = os.path.split(BOM_file)[-1].replace('.xlsx','')
@@ -190,7 +197,6 @@ def build(folder_path, config, outfn, supplier, tree):
         ASCII_tree = LA(tree_dict)
         with open(os.path.join(out_dir,'ASCII Tree.txt'),'w') as f:
             f.write(ASCII_tree)
-
 
 
 if __name__ == '__main__':
