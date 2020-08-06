@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 '''
 Build a multi-level and flattened BOM based on elemental data stored in Excel
 files.
@@ -44,7 +45,6 @@ import pandas as pd
 from numpy import ceil
 import click
 from asciitree import LeftAligned
-
 
 
 def simplify_BOM(BOM_0):
@@ -190,7 +190,6 @@ def build(folder_path, config, outfn, supplier, tree):
         ASCII_tree = LA(tree_dict)
         with open(os.path.join(out_dir,'ASCII Tree.txt'),'w') as f:
             f.write(ASCII_tree)
-
 
 
 
