@@ -21,24 +21,38 @@
 # SOFTWARE.
 
 '''
-Build a multi-level and flattened BOM based on elemental data stored in Excel
-files.
+Build and query multi-level and flattened BOMs based on elemental data stored in
+Microsoft Excel files.
+
+Conventions here are based on some of the concepts from the book "Engineering
+Documentation Control Handbook", 4th Ed. by Frank B. Watts. Namely:
+
+**a master parts "database" is used**
+
+This is represented by the usage of a separate Excel file named
+"Parts list.xlsx" by default, which contains all component items such as parts,
+drawings, and specification documents, and any properties. The following
+property names have special usage:
+
+- PN        the part or item number
+- Item      the type of item, valid options  =>  ['part','assembly','drawing']
 '''
 
 import sys
 import glob
 import os
+from collections import Counter
+from collections.abc import Set, Collection
 import pandas as pd
-from numpy import ceil
-import click
-from anytree import NodeMixin, RenderTree
+from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
+from tabulate import tabulate
 
 
 def fn_base(arg):
     '''
     Return the part of a filename without the file extension. ::
 
-        Foo_12.34.xlsx   =>   Foo_12.34
+        Foo_12.34.xlsx   =>  Foo_12.34
 
     :param arg:     String or list of strings to remove extension.
     :return:        String or list of strings
@@ -48,28 +62,7 @@ def fn_base(arg):
     return '.'.join(arg.split('.')[:-1])
 
 
-class BOMObjectType:
-    def __str__(self):
-        return f'{self.name} item'
-
-
-class PartType(BOMObjectType):
-    name = 'Part'
-
-
-class AssemblyType(BOMObjectType):
-    name = 'Assembly'
-
-    
-class DrawingType(BOMObjectType):
-    name = 'Drawing'
-
-
-class DocumentType(BOMObjectType):
-    name = 'Document'
-
-
-class Item(NodeMixin):
+class BaseItem:
     '''
     A terminal object in a bill-of-material. Represents a part, drawing, or
     document (not an assembly). Does not have child objects and must contain a
@@ -77,30 +70,44 @@ class Item(NodeMixin):
 
     :param PN:              Part or item number (string or number)
     :param BOM parent:      BOM containing this item
-    :param ``BOMObjectType``    obj_type:        A type descriptor
+    :param str item_type:   A type descriptor
     :param kwargs:          Any other fields
     '''
     children = None
 
-    def __init__(self, PN, parent=None, obj_type=None, **kwargs):
+    def __init__(self, PN, parent=None, item_type=None, **kwargs):
         self.PN = PN
         self.parent = parent
-        self.obj_type = obj_type
+        self.item_type = item_type
     
-        self.kwargs ={}
+        self.kwargs =kwargs
         for k,v in kwargs.items():
             try:
                 setattr(self, k, v)
             except AttributeError:
-                self.kwargs.update({k:v})
+                continue
+        
+    @property
+    def series(self):
+        cols = ['PN','item_type','parent'] + list(self.kwargs.keys())
+        return pd.Series({k:getattr(self,k,None) for k in cols})
     
     def __repr__(self):
-        return self.PN
+        return f'Item {self.PN}'
     
     __str__ = __repr__
 
 
-class BOM(NodeMixin):
+class Item(BaseItem, NodeMixin):
+    pass
+
+
+class ItemLink(BaseItem, SymlinkNodeMixin):
+    def __init__(self, target):
+        self.target = target
+
+
+class BOM(Set, NodeMixin):
     '''
     A bill-of-material. Can be a parent of another BOM or have several child
     BOMs. At minimum there must be a "PN" column denoting the part name and a
@@ -118,47 +125,66 @@ class BOM(NodeMixin):
                                 assembly
     :param list children:       list of ``BOM`` objects which are sub-assemblies
     :param BOM parts_list:      Parts list BOM object
-    :param BOM root_bom:        an input root BOM
-    :param str type:            type of object (e.g. Part, Assembly, Docu)
+    :param str item_type:       type of object ['part','assembly','document']
     '''
-    def __init__(self, data=None, name=None, parent=None, children=None,
-                 root_bom=None, parts_list=None, type=None):
-        self.data = data
+    def __init__(self, df=None, name=None, parent=None, children=None,
+                 item_type=None, parts_db=None):
+        self.raw_data = df
         self.name = name
         self.parent = parent
         self.children = children or []
-        self.parts_list = parts_list
-        self.root_bom = root_bom
+        self.item_type = item_type.lower() if item_type else None
+        self.parts_db = parts_db
+
+    def __contains__(self, item):
+        return item in self.children
+
+    def __iter__(self):
+        for item in self.children:
+            yield item
+    
+    def __len__(self):
+        return len(self.children)
 
     @classmethod
     def from_filename(cls, filename, name=None):
         data = pd.read_excel(filename)
-        return cls(data=data, name=name or fn_base(os.path.basename(filename)))
+        return cls(df=data, name=name or fn_base(os.path.basename(filename)))
     
     @property
     def fields(self):
-        return list(self.data.columns)
+        return list(self.df.columns)
     
-    # @property
-    # def parts(self):
-    #     return list(self.data['PN'])
+    @property
+    def parts(self):
+        return [ item for item in self.children if item.item_type == 'part' ]
 
-    # @property
-    # def assemblies(self):
-    #     pass
+    @property
+    def assemblies(self):
+        return [ item for item in self.children if item.item_type == 'assembly' ]
     
-    # @property
-    # def flat(self):
-    #     '''
-    #     Return a flattened version of the BOM, with each sub-assembly contained
-    #     in it expanded.
-    #     '''
-    #     for assem in self.children:
-    #         print(assem)
+    @property
+    def flat(self):
+        '''
+        Return a flattened version of the BOM, with each sub-assembly contained
+        in it expanded.
+        '''
+        items = self.parts
+        for assem in self.assemblies:
+            items += assem.flat
+        return items
     
+    @property
+    def quantities(self):
+        return dict(Counter(self.flat))
+
     @property
     def tree(self):
         return str(RenderTree(self))
+
+    # def parse_data(self):
+    #     '''Convert rows in DataFrame to class objects.'''
+    #     f
     
     @classmethod
     def from_folder(cls, directory, parts_file='Parts list'):
@@ -179,34 +205,43 @@ class BOM(NodeMixin):
         files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) ]
         assembly_files = [ x for x in files if fn_base(x).lower() != parts_file.lower() ]
 
-        assemblies = [ BOM.from_filename(os.path.join(directory, file)) for file in assembly_files ]
+        assemblies = { fn_base(file):BOM.from_filename(os.path.join(directory, file)) for file in assembly_files }
         parts_bom = BOM.from_filename(os.path.join(directory, f'{parts_file}.xlsx'))
-        
+        parts = { row.PN:Item(**{**row.to_dict(), **{'item_type': 'part'}}) for i,row in parts_bom.raw_data.iterrows() }
+
         # Assign parent/child relationships
-        assembly_names = fn_base(assembly_files)
-        for bom in assemblies:
+        for name,bom in assemblies.items():
             children = []
-            for i,item in bom.data.iterrows():
-                if item.PN in assembly_names:
-                    boms_ = [ bom for bom in assemblies if bom.name == item.PN]
-                    if len(boms_) > 1:
-                        raise Exception('BOM\'s should have unique names')
-                    sub_bom = boms_[0]
+            for i,row in bom.raw_data.iterrows():
+                if row.PN in assemblies:                    # it is an assembly
+                    sub_bom = assemblies.get(row.PN)
                     sub_bom.parent = bom
+                    sub_bom.item_type = 'assembly'
                     children.append(sub_bom)
-                else:
-                    children.append(Item(**{**item.to_dict(), **{'parent': bom}}))
+                else:                                       # it is a part
+                    try:
+                        part_ = parts[row.PN]
+                    except IndexError:
+                        print(f'Unable to find part "{row.PN}" in {parts_file+".xlsx"}')
+                        continue
+                    if part_.parent:                        # multi-use part and has already has been placed in an assembly
+                        sym_part = ItemLink(target=part_)   # therefore make any new copies of this part symlink objects
+                        children.append(sym_part)
+                    else:
+                        children.append(part_)
             bom.children = children
-        
+
         # Find root
-        count = 0
-        root = [ bom for bom in assemblies if not bom.parent ]
+        root = [ bom for bom in assemblies.values() if bom.is_root ]
         if len(root) > 1:
-            raise Exception('There should not be multiple root BOMs')
-        
-        return root[0]
-            
+            raise Exception('Singular root BOM not found.')
+        if len(root) == 0:
+            raise Exception('No root BOM found.')
+        root = root[0]
+        root.parts_db = parts
+        return root
+    
     def __repr__(self):
-        return self.name if self.name else f'BOM with {len(self.data)} items'
+        return self.name if self.name else f'BOM with {len(self.raw_data)} items'
     
     __str__ = __repr__
