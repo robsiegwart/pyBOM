@@ -34,14 +34,59 @@ import click
 from anytree import NodeMixin, RenderTree
 
 
+def fn_base(arg):
+    '''
+    Return the part of a filename without the file extension. ::
+
+        Foo_12.34.xlsx   =>   Foo_12.34
+
+    :param arg:     String or list of strings to remove extension.
+    :return:        String or list of strings
+    '''
+    if isinstance(arg, list):
+        return [ fn_base(item) for item in arg ]
+    return '.'.join(arg.split('.')[:-1])
+
+
+class BOMObjectType:
+    def __str__(self):
+        return f'{self.name} item'
+
+
+class PartType(BOMObjectType):
+    name = 'Part'
+
+
+class AssemblyType(BOMObjectType):
+    name = 'Assembly'
+
+    
+class DrawingType(BOMObjectType):
+    name = 'Drawing'
+
+
+class DocumentType(BOMObjectType):
+    name = 'Document'
+
+
 class Item(NodeMixin):
     '''
-    A row in a BOM. Represents a part, subassembly, or document/drawing.
+    A terminal object in a bill-of-material. Represents a part, drawing, or
+    document (not an assembly). Does not have child objects and must contain a
+    parent.
+
+    :param PN:              Part or item number (string or number)
+    :param BOM parent:      BOM containing this item
+    :param ``BOMObjectType``    obj_type:        A type descriptor
+    :param kwargs:          Any other fields
     '''
-    def __init__(self, PN, parent=None, **kwargs):
+    children = None
+
+    def __init__(self, PN, parent=None, obj_type=None, **kwargs):
         self.PN = PN
         self.parent = parent
-        self.children = []
+        self.obj_type = obj_type
+    
         self.kwargs ={}
         for k,v in kwargs.items():
             try:
@@ -55,82 +100,9 @@ class Item(NodeMixin):
     __str__ = __repr__
 
 
-class BOMProject:
-    '''
-    The main entry point for assembling BOMs and getting derived information.
-
-    All Excel files in source directory whose name is not in ``MASTER_FILE`` are
-    treated as sub-assemblies.
-
-    :param str directory:   The source directory containing BOM files.
-    '''
-    MASTER_FILE = ['parts list', 'parts_list', 'master']
-    """These are the names which identify a file as being a master parts list
-    file"""
-
-    def __init__(self, directory):
-        # String name variables
-        self.directory = directory
-        self.xlsx_files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) ]
-        self.assembly_files = list(filter(lambda x: self.fn_base(x).lower() not in self.MASTER_FILE, self.xlsx_files))
-        self.master_file = list(filter(lambda x: self.fn_base(x).lower() in self.MASTER_FILE, self.xlsx_files))[0]
-
-        # BOM object variables
-        self.assemblies = [ BOM.from_filename(os.path.join(self.directory, file), name=self.fn_base(file)) for file in self.assembly_files ]
-        self.master = BOM.from_filename(os.path.join(self.directory, self.master_file), name=self.fn_base(self.master_file))
-        
-        self.root_BOM = None
-        self.items = []
-    
-    @property
-    def parts(self):
-        return self.master.data['PN'].to_list()
-    
-    def fn_base(self, arg):
-        '''
-        Return the part of a filename without the file extension. ::
-
-            Foo_12.34.xlsx   =>   Foo_12.34
-
-        :param arg:     String or list of strings to remove extension.
-        :return:        String or list of strings
-        '''
-        if isinstance(arg, list):
-            return [ self.fn_base(item) for item in arg ]
-        return '.'.join(arg.split('.')[:-1])
-    
-    def get_assembly_by_name(self, name):
-        try:
-            return [ bom for bom in self.assemblies if bom.name == name][0]
-        except TypeError:
-            return None
-
-    def generate_structure(self):
-        assem_names = self.fn_base(self.assembly_files)
-        for bom in self.assemblies:
-            for i,item in bom.data.iterrows():
-                if item.PN in assem_names:
-                    sub_bom = self.get_assembly_by_name(item.PN)
-                    sub_bom.parent = bom
-                else:
-                    self.items.append(Item(**{**item.to_dict(), **{'parent': bom}}))
-                
-    def print_tree(self):
-        self.generate_structure()
-        count = 0
-        for bom in self.assemblies:
-            if not bom.parent:
-                if count > 1:
-                    raise Exception('Multiple root BOMs found')
-                count += 1
-                self.root_BOM = bom
-
-        print(RenderTree(self.root_BOM))
-    
-
 class BOM(NodeMixin):
     '''
-    A Bill-of-material. Can be a parent of another BOM or have several child
+    A bill-of-material. Can be a parent of another BOM or have several child
     BOMs. At minimum there must be a "PN" column denoting the part name and a
     "QTY" column denoting the quantity of that part. Other columns maybe added
     and are passed through.
@@ -145,27 +117,95 @@ class BOM(NodeMixin):
     :param BOM parent:          another ``BOM`` object which is the parent
                                 assembly
     :param list children:       list of ``BOM`` objects which are sub-assemblies
+    :param BOM parts_list:      Parts list BOM object
+    :param BOM root_bom:        an input root BOM
+    :param str type:            type of object (e.g. Part, Assembly, Docu)
     '''
-    def __init__(self, data, name=None, parent=None, children=None):
-        super().__init__()
+    def __init__(self, data=None, name=None, parent=None, children=None,
+                 root_bom=None, parts_list=None, type=None):
         self.data = data
         self.name = name
         self.parent = parent
         self.children = children or []
+        self.parts_list = parts_list
+        self.root_bom = root_bom
 
     @classmethod
-    def from_filename(cls, filename, **kwargs):
+    def from_filename(cls, filename, name=None):
         data = pd.read_excel(filename)
-        return cls(data, **kwargs)
-
+        return cls(data=data, name=name or fn_base(os.path.basename(filename)))
+    
     @property
     def fields(self):
         return list(self.data.columns)
     
-    @property
-    def parts(self):
-        return list(self.data['PN'])
+    # @property
+    # def parts(self):
+    #     return list(self.data['PN'])
 
+    # @property
+    # def assemblies(self):
+    #     pass
+    
+    # @property
+    # def flat(self):
+    #     '''
+    #     Return a flattened version of the BOM, with each sub-assembly contained
+    #     in it expanded.
+    #     '''
+    #     for assem in self.children:
+    #         print(assem)
+    
+    @property
+    def tree(self):
+        return str(RenderTree(self))
+    
+    @classmethod
+    def from_folder(cls, directory, parts_file='Parts list'):
+        '''
+        Generate a hierarchial BOM from a folder containing .xlsx files. The
+        xlsx file with the same name as parameter ``parts_file`` is taken as the
+        master parts list. All others are treated as sub-assemblies. The root
+        BOM is discovered (there should only be one or an exception is raised)
+        via inter-BOM references and each non-root BOM is assigned children and
+        a parent. Each item not an assembly is converted to an ``Item`` object.
+
+        :param str directory:   The source directory containing BOM files.
+        :param str parts_file:  The name of the master parts list Excel file.
+                                Default is ``Parts list.xlsx``.
+        :return BOM:            Returns a top-level BOM with all sub-assemblies
+                                as child BOMs.
+        '''
+        files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) ]
+        assembly_files = [ x for x in files if fn_base(x).lower() != parts_file.lower() ]
+
+        assemblies = [ BOM.from_filename(os.path.join(directory, file)) for file in assembly_files ]
+        parts_bom = BOM.from_filename(os.path.join(directory, f'{parts_file}.xlsx'))
+        
+        # Assign parent/child relationships
+        assembly_names = fn_base(assembly_files)
+        for bom in assemblies:
+            children = []
+            for i,item in bom.data.iterrows():
+                if item.PN in assembly_names:
+                    boms_ = [ bom for bom in assemblies if bom.name == item.PN]
+                    if len(boms_) > 1:
+                        raise Exception('BOM\'s should have unique names')
+                    sub_bom = boms_[0]
+                    sub_bom.parent = bom
+                    children.append(sub_bom)
+                else:
+                    children.append(Item(**{**item.to_dict(), **{'parent': bom}}))
+            bom.children = children
+        
+        # Find root
+        count = 0
+        root = [ bom for bom in assemblies if not bom.parent ]
+        if len(root) > 1:
+            raise Exception('There should not be multiple root BOMs')
+        
+        return root[0]
+            
     def __repr__(self):
         return self.name if self.name else f'BOM with {len(self.data)} items'
     
