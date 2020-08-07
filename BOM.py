@@ -148,17 +148,16 @@ class BOM(Set, NodeMixin):
         self.item_type = item_type.lower() if item_type else None
         self.parts_db = parts_db
 
+        if self.parts_db and self.raw_data:
+            self.init_parts()
+
     def QTY(self, PN):
-        '''Return the QTY for a given PN'''
+        '''
+        Return the quanitity in the current BOM context for a given item
+        identified by its item number, ``PN``.
+        '''
         try:
             return self.raw_data.loc[self.raw_data['PN']==PN, 'QTY'].iloc[0]
-        except IndexError:
-            return None
-
-    def prop(self, PN, prop):
-        '''Return an attribute for a given PN'''
-        try:
-            return self.raw_data.loc[self.raw_data['PN']==PN, prop].iloc[0]
         except IndexError:
             return None
 
@@ -176,21 +175,19 @@ class BOM(Set, NodeMixin):
     def name(self):
         return self.PN or 'none'
 
-    @classmethod
-    def from_filename(cls, filename, PN=None):
-        data = pd.read_excel(filename)
-        return cls(df=data, PN=PN or fn_base(os.path.basename(filename)))
-    
     @property
     def fields(self):
+        '''List the fields (columns) on the input data'''
         return list(self.df.columns)
     
     @property
     def parts(self):
+        '''Return a list of parts that are direct children to this BOM'''
         return [ item for item in self.children if item.item_type == 'part' ]
 
     @property
     def assemblies(self):
+        '''Return a list of assemblies that are direct children to this BOM'''
         return [ item for item in self.children if item.item_type == 'assembly' ]
     
     @property
@@ -206,11 +203,19 @@ class BOM(Set, NodeMixin):
     
     @property
     def quantities(self):
+        '''
+        Return a :py:class:`dict` of ``Item: count`` pairs for each direct child
+        of this BOM.
+        '''
         counted = Counter([item.PN for item in self.flat])
         return { self.parts_db.get(k):v for k,v in counted.items() } if self.parts_db else counted
 
     @property
     def tree(self):
+        '''
+        Return a string representation of the complete BOM structure as a
+        hierarchial tree.
+        '''
         return str(RenderTree(self))
     
     @property
@@ -220,7 +225,11 @@ class BOM(Set, NodeMixin):
 
     @property
     def aggregate(self):
-        '''Flatten the BOM and combine all part QTY's'''
+        '''
+        Return a :py:class:`dict` of ``Item: count`` pairs for the entire BOM
+        tree below the current BOM. Each item's local BOM QTY is multiplied by
+        the QTY of its containing BOM assembly.
+        '''
         parts = Counter()
         for p in self.parts:
             parts.update({p.PN: self.QTY(p.PN)})
@@ -229,6 +238,20 @@ class BOM(Set, NodeMixin):
             for p in bom.parts:
                 parts.update({p.PN: bom.QTY(p.PN)*self.QTY(bom.PN)})
         return { self.parts_db.get(k):v for k,v in parts.items() } if self.parts_db else parts
+    
+    @classmethod
+    def from_filename(cls, filename, PN=None):
+        '''
+        Create an instance of :py:class:`BOM.BOM` based on an existing Excel
+        file.
+
+        :param str filename:    Name of source Excel file
+        :param PN:              Item number, defaults to the filename with its
+                                extension removed.
+        :rtype: BOM
+        '''
+        data = pd.read_excel(filename)
+        return cls(df=data, PN=PN or fn_base(os.path.basename(filename)))
     
     @classmethod
     def from_folder(cls, directory, parts_file_name='Parts list'):
@@ -241,22 +264,27 @@ class BOM(Set, NodeMixin):
         children and a parent. Each item not an assembly is converted to an
         :class:`~BOM.Item` object.
 
+        **Note:** Any files starting with an underscore are not included.
+
         :param str directory:       The source directory containing BOM files.
         :param str parts_file_name: The name of the master parts list Excel
                                     file.
                                     Default is ``Parts list.xlsx``.
-        :return BOM:                Returns a top-level BOM with all
+        :return:                    Returns a top-level BOM with all
                                     sub-assemblies as child BOMs.
-
-        .. note:: any files starting with an underscore are not included.
+        :rtype:                     BOM
         '''
         files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) if not os.path.basename(fn).startswith('_') ]
+        """All valid files in the directory"""
         assembly_files = [ x for x in files if fn_base(x).lower() != parts_file_name.lower() ]
+        """Those files which are assumed to be assemblies"""
 
         assemblies = { fn_base(file):BOM.from_filename(os.path.join(directory, file)) for file in assembly_files }
+        """Instances of ``BOM`` for each assembly keyed with their PN"""
         parts_bom = BOM.from_filename(os.path.join(directory, f'{parts_file_name}.xlsx'))
+        """Instance of ``BOM`` for the master parts list"""
         parts = { row.PN:Item(**{**row.to_dict(), **{'item_type': 'part'}}) for i,row in parts_bom.raw_data.iterrows() }
-
+        """Instances of ``Item`` for each part in the master parts list"""
 
         # Assign parent/child relationships
         for name,bom in assemblies.items():
@@ -273,7 +301,7 @@ class BOM(Set, NodeMixin):
                     except IndexError:
                         print(f'Unable to find part "{row.PN}" in {parts_file_name+".xlsx"}')
                         continue
-                    if part_.parent:                        # multi-use part and has already has been placed in an assembly
+                    if part_.parent:                        # is a multi-use part and has already has been placed in an assembly
                         sym_part = ItemLink(target=part_)   # therefore make any new copies of this part symlink objects
                         children.append(sym_part)
                     else:
@@ -291,6 +319,6 @@ class BOM(Set, NodeMixin):
         return root
     
     def __repr__(self):
-        return self._name if self._name else f'BOM with {len(self.raw_data)} items'
+        return self.PN or f'BOM with {len(self.raw_data)} items'
     
     __str__ = __repr__
