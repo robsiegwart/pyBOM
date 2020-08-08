@@ -43,11 +43,11 @@ import glob
 import os
 from collections import Counter
 from collections.abc import Set, Collection
+from math import ceil
 import pandas as pd
 from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
 from anytree.exporter import DotExporter
 from tabulate import tabulate
-from math import ceil
 
 
 def fn_base(arg):
@@ -66,18 +66,7 @@ def fn_base(arg):
 
 class BaseItem:
     '''
-    Base class for :class:`~BOM.Item` and :class:`~BOM.ItemLink`. Represents a
-    terminal object in a bill-of-material which does not have children:
-    everything except assemby such as a part, drawing, or document. Does not
-    have child objects and must contain a parent.
-
-    Note: this and its derivative classes are not really used -
-    :py:meth:`BOM.BOM.from_folder` is the main entry point in application.
-
-    :param PN:              Part or item number (string or number)
-    :param BOM parent:      BOM containing this item
-    :param str item_type:   A type descriptor
-    :param kwargs:          Any other fields
+    Base class for :class:`~BOM.Item` and :class:`~BOM.ItemLink`. 
     '''
     children = []
 
@@ -110,7 +99,15 @@ class BaseItem:
 
 
 class Item(BaseItem, NodeMixin):
-    '''A BOM item object.'''
+    '''
+    A BOM item object. Represents a terminal object in a bill-of-material which
+    does not have children: everything except assembly such as a part, drawing,
+    or document. Does not have child objects and must contain a parent.
+
+    :param PN:              Part or item number (string or number)
+    :param BOM parent:      BOM containing this item
+    :param str item_type:   A type descriptor
+    :param kwargs:          Any other fields'''
     pass
 
 
@@ -118,6 +115,8 @@ class ItemLink(BaseItem, SymlinkNodeMixin):
     '''
     A link to a BOM item object. Used when a BOM item is used in more than one
     assembly; each 'copy' of the item is of this type.
+
+    :param NodeMixin target:    The target node object (anytree)
     '''
     def __init__(self, target):
         self.target = target
@@ -128,7 +127,7 @@ class BOM(Set, NodeMixin):
     A bill-of-material. Can be a child of another BOM or have several child
     BOMs. The only required columns in the input DataFrame are a "PN" column
     denoting the part name and a "QTY" column denoting the quantity of that
-    part.
+    item.
 
     :param DataFrame df:        input BOM data
     :param PN:                  BOM item number
@@ -197,8 +196,10 @@ class BOM(Set, NodeMixin):
     @property
     def quantities(self):
         '''
-        Return a :py:class:`dict` of ``Item: count`` pairs for each direct child
-        of this BOM.
+        Return a dict of ``Item: count`` pairs for each direct child of this
+        BOM.
+
+        :rtype: dict
         '''
         counted = Counter([item.PN for item in self.flat])
         return { self.parts_db.get(k):v for k,v in counted.items() } if self.parts_db else counted
@@ -208,6 +209,8 @@ class BOM(Set, NodeMixin):
         '''
         Return a string representation of the complete BOM hierarchy from the
         current BOM down as a tree.
+
+        :rtype: str
         '''
         return str(RenderTree(self))
     
@@ -216,6 +219,8 @@ class BOM(Set, NodeMixin):
         '''
         Return the BOM tree structure from :py:meth:`BOM.BOM.tree` in DOT graph
         format (Graphiz)
+
+        :rtype: str
         '''
         return '\n'.join([line for line in DotExporter(self)])
 
@@ -225,6 +230,8 @@ class BOM(Set, NodeMixin):
         Return a :py:class:`dict` of ``Item: count`` pairs for the entire BOM
         tree below the current BOM. Each item's local QTY is multiplied by the
         QTY of its containing BOM assembly.
+
+        :rtype: dict
         '''
         parts = Counter()
         for p in self.parts:
@@ -240,6 +247,8 @@ class BOM(Set, NodeMixin):
         '''
         Return a summary table with aggregated quantities alongside part table
         information.
+
+        :rtype: DataFrame
         '''
         counts = { k.PN:v for k,v in self.aggregate.items() }
         df = self.parts_db.df_raw
@@ -258,7 +267,7 @@ class BOM(Set, NodeMixin):
         :param str filename:    Name of source Excel file
         :param PN:              Item number, defaults to the filename with its
                                 extension removed.
-        :rtype: BOM
+        :rtype:                 BOM
         '''
         data = pd.read_excel(filename)
         return cls(df=data, PN=PN or fn_base(os.path.basename(filename)))
@@ -296,7 +305,6 @@ class BOM(Set, NodeMixin):
         parts_db = PartsDB.from_file(os.path.join(directory, f'{parts_file_name}.xlsx'))
         """Master parts database, ``PartsDB`` instance"""
         
-
         # Assign parent/child relationships
         for name,bom in assemblies.items():
             children = []
