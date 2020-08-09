@@ -217,7 +217,7 @@ class BOM(Set, NodeMixin):
     @property
     def dot(self):
         '''
-        Return the BOM tree structure from :py:meth:`BOM.BOM.tree` in DOT graph
+        Return the BOM tree structure from :py:attr:`BOM.BOM.tree` in DOT graph
         format (Graphiz)
 
         :rtype: str
@@ -250,11 +250,26 @@ class BOM(Set, NodeMixin):
 
         :rtype: DataFrame
         '''
+        def packages_to_buy(row):
+            if 'Pkg QTY' not in row or pd.isnull(row['Pkg QTY']):
+                return row['Total QTY']
+            return ceil(row['Total QTY']/row['Pkg QTY'])
+        
+        def subtotal(row):
+            if 'Pkg Price' in row and not pd.isnull(row['Pkg Price']):
+                cost_col = 'Pkg Price'
+            elif 'Cost' in row and not pd.isnull(row['Cost']):
+                cost_col = 'Cost'
+            else:
+                return pd.NaN
+            return row['Purchase QTY']*row[cost_col]
+
+
         counts = { k.PN:v for k,v in self.aggregate.items() }
         df = self.parts_db.df_raw
         df['Total QTY'] = df.apply(lambda row: counts.get(row.PN), axis=1)
-        df['Packages to Buy'] = df.apply(lambda row: ceil(row['Total QTY']/row['Pkg QTY']), axis=1)
-        df['Packages Subtotal'] = df['Packages to Buy']*df['Pkg Price']
+        df['Purchase QTY'] = df.apply(packages_to_buy, axis=1)
+        df['Subtotal'] = df.apply(subtotal, axis=1)
         return df
 
 
