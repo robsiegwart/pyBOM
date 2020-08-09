@@ -35,7 +35,7 @@ a separate .xlsx file. Thus you might have: ::
        WH-01.xlsx          <-- subassembly
 
 Root and sub-assemblies are inferred from item number relationships and do not
-have to be explicetly identified.
+have to be explicitly identified.
 
 *Parts list.xlsx* serves as the single point of reference for part information.
 For example, it may have the following:
