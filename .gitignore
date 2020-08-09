@@ -6,6 +6,8 @@ development/
 temp/
 *.code-workspace
 dev/
+run/
+Example/_*.xlsx
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
