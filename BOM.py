@@ -23,19 +23,6 @@
 '''
 Build and query multi-level and flattened BOMs based on elemental data stored in
 Microsoft Excel files.
-
-Conventions here are based on some of the concepts from the book "Engineering
-Documentation Control Handbook", 4th Ed. by Frank B. Watts. Namely:
-
-**a master parts "database" is used**
-
-This is represented by the usage of a separate Excel file named
-"Parts list.xlsx" by default, which contains all component items such as parts,
-drawings, and specification documents, and any properties. The following
-property names have special usage:
-
-- PN        the part or item number
-- Item      the type of item, valid options  =>  ['part','assembly','drawing']
 '''
 
 import sys
