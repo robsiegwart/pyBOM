@@ -2,19 +2,12 @@ from setuptools import setup
 
 
 setup(
-    name='pybom',
+    name='python-BOM',
     version=0.1,
     pymodules=['BOM.py'],
-    entry_points={
-        'console_scripts': [
-            'pybom = BOM:build'
-        ]
-    },
     install_requires=[
-        'click>=7.1.1',
-        'pyyaml>=5.3.1',
-        'pdfkit>=0.6.1',
-        'jinja2>=2.11.1'
+        'pandas>=1.0.5',
+        'anytree>=2.8.0'
     ],
     python_requires='>=3.5'
 )
