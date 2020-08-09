@@ -47,7 +47,6 @@ from math import ceil
 import pandas as pd
 from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
 from anytree.exporter import DotExporter
-from tabulate import tabulate
 
 
 def fn_base(arg):
