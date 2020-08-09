@@ -94,12 +94,12 @@ Then, call methods or properties on the root BOM returned from
 
 `BOM.BOM.aggregate`
   : Get the aggregated quantity of each part/assembly from the current
-    BOM level down
+  BOM level down
 
 `BOM.BOM.summary`
   : Get a summary in the form of a DataFrame containing the master parts
-    list with each item\'s aggregated quantity and the required packages
-    to buy if the `Pkg QTY` field is not 1.
+  list with each item's aggregated quantity and the required packages
+  to buy if the `Pkg QTY` field is not 1.
 
 `BOM.BOM.tree`
   : Return a string representation of the BOM tree hierarchy
