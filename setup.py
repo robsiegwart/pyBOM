@@ -2,9 +2,9 @@ from setuptools import setup
 
 
 setup(
-    name='python-BOM',
+    name='pyBOM',
     version=0.1,
-    pymodules=['BOM.py'],
+    packages=['pyBOM'],
     install_requires=[
         'pandas>=1.0.5',
         'anytree>=2.8.0'

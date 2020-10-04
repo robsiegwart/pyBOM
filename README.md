@@ -1,5 +1,5 @@
-python-BOM
-==========
+pyBOM
+=====
 
 A Python program for flattening a layered bill-of-material (BOM) based on Excel
 files. Part quantities are combined and a total quantity or
@@ -40,15 +40,15 @@ have to be explicitly identified.
 *Parts list.xlsx* serves as the single point of reference for part information.
 For example, it may have the following:
 
-| PN          | Name          | Description           | Cost    | Item    | Supplier            | Supplier PN     | Pkg QTY   | Pkg Price  |
-| ----------- | ------------- | --------------------- | ------- | ------- | ------------------- | --------------- | --------- | ---------- |
-| SK1001-01   | Bearing       | Wheel bearing         |         | part    | XYZ Bearing Co.     | 74295-942       | 1         | 2.99       |
-| SK1002-01   | Board         | Standard type         | 13.42   | part    |                     |                 |           |            |
-| SK1003-01   | Truck half    | Truck fixed           |         | part    | Skatr Dude Inc.     | TR1-A           | 1         | 9.87       |
-| SK1004-01   | Truck half    | Truck movable         |         | part    | Skatr Dude Inc.     | TR1-B           | 1         | 12.25      |
-| SK1005-01   | Truck screw   | 1/4-20 SHCS           |         | part    | Bolts R Us          | 92220A          | 50        | 12.86      |
-| SK1006-01   | Wheel         | Hard clear urethane   |         | part    | Skatr Dude Inc.     | WHL-PRX         | 4         | 9.87       |
-| SK1007-01   | Nut           | 1/4-20 Hex nut        |         | part    | Bolts R Us          | 95479A          | 50        | 4.88       |
+| PN        | Name        | Description         | Cost    | Item  | Supplier         | Supplier PN   | Pkg QTY   | Pkg Price  |
+| --------- | ----------- | ------------------- | ------- | ----- | ---------------- | ------------- | --------- | ---------- |
+| SK1001-01 | Bearing     | Wheel bearing       |         | part  | XYZ Bearing Co.  | 74295-942     | 1         | 2.99       |
+| SK1002-01 | Board       | Standard type       | 13.42   | part  |                  |               |           |            |
+| SK1003-01 | Truck half  | Truck fixed         |         | part  | Skatr Dude Inc.  | TR1-A         | 1         | 9.87       |
+| SK1004-01 | Truck half  | Truck movable       |         | part  | Skatr Dude Inc.  | TR1-B         | 1         | 12.25      |
+| SK1005-01 | Truck screw | 1/4-20 SHCS         |         | part  | Bolts R Us       | 92220A        | 50        | 12.86      |
+| SK1006-01 | Wheel       | Hard clear urethane |         | part  | Skatr Dude Inc.  | WHL-PRX       | 4         | 9.87       |
+| SK1007-01 | Nut         | 1/4-20 Hex nut      |         | part  | Bolts R Us       | 95479A        | 50        | 4.88       |
 
 For each assembly, all that is required is the part identification number and
 quantity which correspond to the following fields:
