@@ -30,7 +30,7 @@ import glob
 import os
 from collections import Counter
 from collections.abc import Set, Collection
-from math import ceil
+from math import ceil, nan
 import pandas as pd
 from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
 from anytree.exporter import DotExporter
@@ -247,7 +247,7 @@ class BOM(Set, NodeMixin):
             elif 'Cost' in row and not pd.isnull(row['Cost']):
                 cost_col = 'Cost'
             else:
-                return pd.NaN
+                return nan
             return row['Purchase QTY']*row[cost_col]
 
 
