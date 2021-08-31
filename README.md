@@ -26,7 +26,7 @@ BOMs are created by storing parts and assemblies in Excel files.
 
 In a separate directory, put an Excel file named *Parts list.xlsx* to serve as
 the master parts list \"database\". Then, each additional assembly is described
-by a separate .xlsx file. Thus you might have: :
+by a separate .xlsx file. Thus you might have:
 
     my_project/
        Parts list.xlsx     <-- master parts list
@@ -75,34 +75,121 @@ which are:
 Usage
 -----
 
-Create a folder to contain your BOM files and create a parts list and any
-assemblies as individual Excel files (the file name becomes the assembly item
-number by default). Then, call class method `BOM.BOM.from_folder()` with the
-path to your folder to instantiate and build BOM objects.
+After installing, (i.e. `pip install .`), import:
 
-Then, call methods or properties on the root BOM returned from
-`BOM.BOM.from_folder()` to obtain derived information:
+`import pyBOM`
 
-`BOM.BOM.parts`
+Create a folder and create the necessary files (parts list and assemblies as
+individual Excel files (the file name becomes the assembly item number by
+default). Then, in a script call class method `from_folder` to instantiate the
+BOM structure and return the top-level bill-of-material:
+
+```python
+import pyBOM
+bom = pyBOM.BOM.from_folder('Example')
+```
+
+Then, call methods or properties on `BOM` objects to obtain derived information:
+
+`BOM.parts`
   : Get a list of all direct-child parts
 
-`BOM.BOM.assemblies`
+  ```
+  >>> print(bom.parts)
+  [Part SK1002-01, Part SK1005-01, Part SK1007-01]
+  ```
+
+`BOM.assemblies`
   : Get a list of all direct-child assemblies
 
-`BOM.BOM.quantities`
-  : Get the quantity of each direct child in the BOM
+  ```
+  >>> print(bom.assemblies)
+  [WH-01, TR-01]
+  ```
 
-`BOM.BOM.aggregate`
+`BOM.quantities`
+  : Get the quantity of each direct-child part in the BOM
+
+  ```
+  >>> print(bom.quantities)
+  {Part SK1002-01: 1, Part SK1005-01: 1, Part SK1007-01: 3, Part SK1006-01: 1,
+  Part SK1001-01: 1, Part SK1003-01: 1, Part SK1004-01: 1}
+  ```
+
+`BOM.aggregate`
   : Get the aggregated quantity of each part/assembly from the current
   BOM level down
 
-`BOM.BOM.summary`
+  ```
+  >>> print(bom.aggregate)
+  {Part SK1002-01: 1, Part SK1005-01: 8, Part SK1007-01: 14, Part SK1006-01: 8,
+  Part SK1001-01: 4, Part SK1003-01: 2, Part SK1004-01: 2}
+  ```
+
+`BOM.summary`
   : Get a summary in the form of a DataFrame containing the master parts
   list with each item's aggregated quantity and the required packages
   to buy if the `Pkg QTY` field is not 1.
 
-`BOM.BOM.tree`
+  ```
+  >>> print(bom.summary)
+          PN         Name          Description  ...  Total QTY Purchase QTY Subtotal
+0  SK1001-01      Bearing        Wheel bearing  ...          4            4    11.96
+1  SK1002-01        Board        Standard type  ...          1            1    13.42
+2  SK1003-01   Truck half          Truck fixed  ...          2            2    19.74
+3  SK1004-01   Truck half        Truck movable  ...          2            2    24.50
+4  SK1005-01  Truck screw          1/4-20 SHCS  ...          8            1    12.86
+5  SK1006-01        Wheel  Hard clear urethane  ...          8            2    19.74
+6  SK1007-01          Nut       1/4-20 Hex nut  ...         14            1     4.88
+  ```
+
+`BOM.tree`
   : Return a string representation of the BOM tree hierarchy
+
+  ```
+  >>> print(bom.tree)
+  SKA-100
+  ├── Part SK1002-01    
+  ├── WH-01
+  │   ├── Part SK1006-01
+  │   ├── Part SK1001-01
+  │   └── Part SK1007-01
+  ├── TR-01
+  │   ├── Part SK1003-01
+  │   ├── Part SK1004-01
+  │   └── Part SK1007-01
+  ├── Part SK1005-01
+  └── Part SK1007-01
+  ```
+
+
+### Command Line
+
+Some quick functionality is extended to the command line via python module mode:
+
+
+```
+> python -m pyBOM FOLDER ACTION
+```
+
+Where `ACTION` is what to do and is just a property call on the resulting
+top-level BOM:
+
+```
+> python -m pyBOM Example tree
+SKA-100
+├── Part SK1002-01
+├── WH-01
+│   ├── Part SK1006-01
+│   ├── Part SK1001-01
+│   └── Part SK1007-01
+├── TR-01
+│   ├── Part SK1003-01
+│   ├── Part SK1004-01
+│   └── Part SK1007-01
+├── Part SK1005-01
+└── Part SK1007-01
+```
 
 Dependencies
 ------------
