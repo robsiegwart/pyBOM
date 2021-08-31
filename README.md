@@ -162,6 +162,19 @@ Then, call methods or properties on `BOM` objects to obtain derived information:
   └── Part SK1007-01
   ```
 
+  Calling this on child assemblies shows the tree from that reference point:
+  ```
+  >>> sa = bom.assemblies[0]
+  >>> sa
+  WH-01
+  >>> print(sa.tree)
+  WH-01
+  ├── Part SK1006-01
+  ├── Part SK1001-01
+  └── Part SK1007-01
+  ```
+
+
 
 ### Command Line
 
