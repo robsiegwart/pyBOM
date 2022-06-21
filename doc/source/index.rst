@@ -1,5 +1,5 @@
-Welcome to BOM.py's documentation
-=================================
+Welcome to pyBOM.py's documentation
+===================================
 
 Background
 ----------
