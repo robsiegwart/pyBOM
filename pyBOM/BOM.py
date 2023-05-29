@@ -224,8 +224,8 @@ class BOM(Set, NodeMixin):
             parts.update({p.PN: self.QTY(p.PN)})
         
         for bom in self.assemblies:
-            for p in bom.parts:
-                parts.update({p.PN: bom.QTY(p.PN)*self.QTY(bom.PN)})
+            for k, v in bom.aggregate.items():
+                parts.update({k: v*self.QTY(bom.PN)})
         return { self.parts_db.get(k):v for k,v in parts.items() } if self.parts_db else parts
     
     @property
