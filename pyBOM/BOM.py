@@ -317,9 +317,13 @@ class BOM(Set, NodeMixin):
             for i,row in bom.df_raw.iterrows():
                 if row.PN in assemblies:                    # it is an assembly
                     sub_bom = assemblies.get(row.PN)
-                    sub_bom.parent = bom
-                    sub_bom.item_type = 'assembly'
-                    children.append(sub_bom)
+                    if sub_bom.parent:
+                        sym_bom = ItemLink(target=sub_bom)
+                        children.append(sym_bom)
+                    else:
+                        sub_bom.parent = bom
+                        sub_bom.item_type = 'assembly'
+                        children.append(sub_bom)
                 else:                                       # it is a part
                     try:
                         part_ = parts_db.get(row.PN)
