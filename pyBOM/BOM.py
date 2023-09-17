@@ -256,6 +256,10 @@ class BOM(Set, NodeMixin):
         df['Purchase QTY'] = df.apply(packages_to_buy, axis=1)
         df['Subtotal'] = df.apply(subtotal, axis=1)
         return df
+        
+    @property
+    def name(self):
+        return self.PN
 
 
     @classmethod
