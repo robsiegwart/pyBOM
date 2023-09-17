@@ -126,14 +126,14 @@ class BOM(Set, NodeMixin):
     '''
     def __init__(self, df=None, PN=None, parent=None, items=None,
                  item_type=None, parts_db=None):
-        self.df_raw = df
+        self.df = df
         self.PN = PN
         self.parent = parent
         self.children = items or []
         self.item_type = item_type.lower() if item_type else None
         self.parts_db = parts_db
 
-        if self.parts_db and self.df_raw:
+        if self.parts_db and self.df:
             self.init_parts()
 
     def __contains__(self, item):
@@ -173,7 +173,7 @@ class BOM(Set, NodeMixin):
         identified by its item number, ``PN``.
         '''
         try:
-            return self.df_raw.loc[self.df_raw['PN']==PN, 'QTY'].iloc[0]
+            return self.df.loc[self.df['PN']==PN, 'QTY'].iloc[0]
         except IndexError as e:
             print(e)
             return None
@@ -251,7 +251,7 @@ class BOM(Set, NodeMixin):
 
 
         counts = { k.PN:v for k,v in self.aggregate.items() }
-        df = self.parts_db.df_raw
+        df = self.parts_db.df
         df['Total QTY'] = df.apply(lambda row: counts.get(row.PN), axis=1)
         df['Purchase QTY'] = df.apply(packages_to_buy, axis=1)
         df['Subtotal'] = df.apply(subtotal, axis=1)
@@ -308,7 +308,7 @@ class BOM(Set, NodeMixin):
         # Assign parent/child relationships
         for name,bom in assemblies.items():
             children = []
-            for i,row in bom.df_raw.iterrows():
+            for i,row in bom.df.iterrows():
                 if row.PN in assemblies:                    # it is an assembly
                     sub_bom = assemblies.get(row.PN)
                     sub_bom.parent = bom
@@ -338,7 +338,7 @@ class BOM(Set, NodeMixin):
         return root
     
     def __repr__(self):
-        return self.PN or f'BOM with {len(self.df_raw)} items'
+        return self.PN or f'BOM with {len(self.df)} items'
     
     __str__ = __repr__
 
@@ -350,7 +350,7 @@ class PartsDB:
     :param DataFrame df:    Input data as a DataFrame
     '''
     def __init__(self, df):
-        self.df_raw = df
+        self.df = df
         self.parts = { row.PN:Item(**{**row.to_dict(), **{'item_type': 'part'}}) for i,row in df.iterrows() }
     
     @classmethod
@@ -371,7 +371,7 @@ class PartsDB:
     def prop(self, PN, prop):
         '''Return a property for specific part'''
         try:
-            return self.df_raw.loc[self.df_raw['PN']==PN, prop].iloc[0]
+            return self.df.loc[self.df['PN']==PN, prop].iloc[0]
         except IndexError as e:
             print(e)
             return None
