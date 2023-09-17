@@ -8,6 +8,7 @@ temp/
 dev/
 run/
 Example/_*.xlsx
+env/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
