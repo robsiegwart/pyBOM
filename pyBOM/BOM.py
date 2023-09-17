@@ -25,11 +25,10 @@ Build and query multi-level and flattened BOMs based on elemental data stored in
 Microsoft Excel files.
 '''
 
-import sys
 import glob
 import os
 from collections import Counter
-from collections.abc import Set, Collection
+from collections.abc import Set
 from math import ceil, nan
 import pandas as pd
 from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
