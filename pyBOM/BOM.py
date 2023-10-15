@@ -223,8 +223,8 @@ class BOM(Set, NodeMixin):
             parts.update({p.PN: self.QTY(p.PN)})
         
         for bom in self.assemblies:
-            for p in bom.parts:
-                parts.update({p.PN: bom.QTY(p.PN)*self.QTY(bom.PN)})
+            for k, v in bom.aggregate.items():
+                parts.update({k: v*self.QTY(bom.PN)})
         return { self.parts_db.get(k):v for k,v in parts.items() } if self.parts_db else parts
     
     @property
@@ -238,7 +238,11 @@ class BOM(Set, NodeMixin):
         def packages_to_buy(row):
             if 'Pkg QTY' not in row or pd.isnull(row['Pkg QTY']):
                 return row['Total QTY']
-            return ceil(row['Total QTY']/row['Pkg QTY'])
+            try:
+                xxx = ceil(row['Total QTY']/row['Pkg QTY'])
+            except ValueError:
+                xxx = 0
+            return xxx
         
         def subtotal(row):
             if 'Pkg Price' in row and not pd.isnull(row['Pkg Price']):
@@ -297,7 +301,8 @@ class BOM(Set, NodeMixin):
                                     sub-assemblies as child BOMs.
         :rtype:                     BOM
         '''
-        files = [ os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) if not os.path.basename(fn).startswith('_') ]
+        files = [os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) if
+                 not os.path.basename(fn).startswith('_') and not os.path.basename(fn).startswith('~')]
         """All valid Excel files in the directory"""
         
         assembly_files = [ x for x in files if fn_base(x).lower() != parts_file_name.lower() ]
@@ -315,9 +320,13 @@ class BOM(Set, NodeMixin):
             for i,row in bom.df.iterrows():
                 if row.PN in assemblies:                    # it is an assembly
                     sub_bom = assemblies.get(row.PN)
-                    sub_bom.parent = bom
-                    sub_bom.item_type = 'assembly'
-                    children.append(sub_bom)
+                    if sub_bom.parent:
+                        sym_bom = ItemLink(target=sub_bom)
+                        children.append(sym_bom)
+                    else:
+                        sub_bom.parent = bom
+                        sub_bom.item_type = 'assembly'
+                        children.append(sub_bom)
                 else:                                       # it is a part
                     try:
                         part_ = parts_db.get(row.PN)
