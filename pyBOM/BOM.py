@@ -239,10 +239,10 @@ class BOM(Set, NodeMixin):
             if 'Pkg QTY' not in row or pd.isnull(row['Pkg QTY']):
                 return row['Total QTY']
             try:
-                xxx = ceil(row['Total QTY']/row['Pkg QTY'])
+                packages_to_buy_ = ceil(row['Total QTY']/row['Pkg QTY'])
             except ValueError:
-                xxx = 0
-            return xxx
+                packages_to_buy_ = 0
+            return packages_to_buy_
         
         def subtotal(row):
             if 'Pkg Price' in row and not pd.isnull(row['Pkg Price']):
