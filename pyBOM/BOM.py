@@ -177,17 +177,6 @@ class BOM(Set, NodeMixin):
         except IndexError as e:
             print(e)
             return None
-    
-    @property
-    def quantities(self):
-        '''
-        Return a dict of ``Item: count`` pairs for each direct child of this
-        BOM.
-
-        :rtype: dict
-        '''
-        counted = Counter([item.PN for item in self.flat])
-        return { self.parts_db.get(k):v for k,v in counted.items() } if self.parts_db else counted
 
     @property
     def tree(self):
