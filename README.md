@@ -1,5 +1,4 @@
-pyBOM
-=====
+# pyBOM
 
 A Python program for flattening a layered bill-of-material (BOM) based on Excel
 files. Part quantities are combined and a total quantity or
@@ -7,8 +6,7 @@ minimum-required-package-to-buy amount is calculated, in addition to extended
 costs. A tree structure of the BOM hierarchy can also be created and converted
 to DOT syntax for further graphics generation.
 
-Motivation
-----------
+## Motivation
 
 The main problem solved is to combine identical parts from various
 sub-assemblies and locations in your product BOM. Additionally, it is to be used
@@ -19,12 +17,14 @@ necessary to calculate the total QTY of a part and therefore determine the
 mininum packages of the product to buy, since many parts come in packs greater
 than QTY 1.
 
-Structure
----------
+## Structure
 
-BOMs are created by storing parts and assemblies in Excel files.
+There are two methods for storing data for parts and assemblies: multi-file or
+single file.
 
-In a separate directory, put an Excel file named *Parts list.xlsx* to serve as
+### Multi-File
+
+In a separate directory, put an Excel file named *Parts List.xlsx* to serve as
 the master parts list \"database\". Then, each additional assembly is described
 by a separate .xlsx file. Thus you might have:
 
@@ -72,24 +72,36 @@ which are:
 `Pkg Price`
   : The cost of a specific supplier SKU                                        
 
-Usage
------
 
-After installing, (i.e. `pip install .`), import:
+### Single File
 
-`import pyBOM`
+A single Excel file is used to store all part and assembly data through the use
+of Excel tabs.
 
-Create a folder and create the necessary files (parts list and assemblies as
-individual Excel files (the file name becomes the assembly item number by
-default). Then, in a script call class method `from_folder` to instantiate the
-BOM structure and return the top-level bill-of-material:
+The first (left-most) Excel tab is treated as the Parts List "database", regardless
+of its name. All tabs/sheets to the right are interpreted as assemblies, with
+the sheet name as the assembly part number (PN).
+
+
+## Usage
+
+After downloading, install with pip via `pip install .`
+
+Setup your data with either the multi-file or single file approach, and then
+call the relevant method:
 
 ```python
-import pyBOM
-bom = pyBOM.BOM.from_folder('Example')
+from pyBOM import BOM
+
+# Multi-file
+bom = BOM.from_folder(FOLDER)
+
+# Single file
+bom = BOM.single_file(FILENAME)
 ```
 
-Then, call methods or properties on `BOM` objects to obtain derived information:
+This returns a `BOM` object with properties on it you can retrieve:
+
 
 `BOM.parts`
   : Get a list of all direct-child parts
@@ -105,15 +117,6 @@ Then, call methods or properties on `BOM` objects to obtain derived information:
   ```
   >>> print(bom.assemblies)
   [WH-01, TR-01]
-  ```
-
-`BOM.quantities`
-  : Get the quantity of each direct-child part in the BOM
-
-  ```
-  >>> print(bom.quantities)
-  {Part SK1002-01: 1, Part SK1005-01: 1, Part SK1007-01: 3, Part SK1006-01: 1,
-  Part SK1001-01: 1, Part SK1003-01: 1, Part SK1004-01: 1}
   ```
 
 `BOM.aggregate`
