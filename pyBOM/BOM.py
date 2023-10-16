@@ -265,7 +265,6 @@ class BOM(Set, NodeMixin):
     def name(self):
         return self.PN
 
-
     @classmethod
     def from_file(cls, filename, PN=None):
         '''
@@ -313,8 +312,37 @@ class BOM(Set, NodeMixin):
         
         parts_db = PartsDB.from_file(os.path.join(directory, f'{parts_file_name}.xlsx'))
         """Master parts database, ``PartsDB`` instance"""
-        
-        # Assign parent/child relationships
+
+        return cls.parse_parent_child(parts_db, assemblies)
+    
+    @classmethod
+    def single_file(cls, filename):
+        '''
+        Build a structured BOM from a single Excel file, where the tabs of the
+        document form the data, with the following convention:
+
+        - the first tab is the parts list 'database'
+        - all subsequent tabs are assemblies
+
+        For each assembly the tab/sheet name is the assembly part number (PN).
+        '''
+        excelfile = pd.ExcelFile(filename)
+        sheets = excelfile.sheet_names
+        if not len(sheets) > 1:
+            raise Exception('The Excel file in single file format must contain more than one tab.')
+        parts_db = PartsDB(excelfile.parse(sheets[0]))
+        assemblies = { sheet_:BOM(excelfile.parse(sheet_), PN=sheet_) for sheet_ in sheets[1:] }
+        return cls.parse_parent_child(parts_db, assemblies)
+    
+    @staticmethod
+    def parse_parent_child(parts_db, assemblies):
+        '''
+        Assign parent/child relationships between parts and assemblies.
+
+        :param DataFrame parts_db:      The parts database
+        :param dict assemblies:         A dictionary of assemblies in the form
+                                        {PN: :py:class:`BOM.BOM`}
+        '''
         for name,bom in assemblies.items():
             children = []
             for i,row in bom.df.iterrows():
@@ -331,7 +359,7 @@ class BOM(Set, NodeMixin):
                     try:
                         part_ = parts_db.get(row.PN)
                     except IndexError:
-                        print(f'Unable to find part "{row.PN}" in {parts_file_name+".xlsx"}')
+                        print(f'Unable to find part "{row.PN}"')
                         continue
                     if part_.parent:                        # is a multi-use part and has already has been placed in an assembly
                         sym_part = ItemLink(target=part_)   # therefore make any new copies of this part symlink objects
